@@ -12,7 +12,7 @@ windChoices = ['North','South','East','West']
 windDir = 'East'
 activePrey = False
 activePredator = False
-
+showCenter = False
 
 
 
@@ -33,6 +33,7 @@ class Boid:
         self.body = canvas.create_oval(x0,y0, x0 + 10, y0 + 10, fill="cyan")
         self.xspeed = 2
         self.yspeed = 2
+        self.avgList = []
 
     def calculateVelocity(self):
 
@@ -122,7 +123,12 @@ class Boid:
     def move(self):
         self.calculateVelocity()
         canvas.move(self.body, self.xspeed, self.yspeed)
-        
+        global showCenter
+        if showCenter:
+            center = flockCohesion(self)
+            avgBoid = canvas.create_oval(center[0], center[1], center[0] + 10, center[1] + 10, fill="red")
+            self.avgList.append(avgBoid)
+            
 
     def getPos(self):
         selfPos = canvas.coords(self.body)
@@ -132,6 +138,9 @@ class Boid:
 
     def getSpeed(self):
         return (self.xspeed, self.yspeed)
+
+    def getAvgList(self):
+        return self.avgList
 
 
 
@@ -245,7 +254,19 @@ def deactivatePred():
     activatePredButton["state"] = "normal"
     tk.config(cursor="")
 
+def showAvg():
+    global showCenter
+    showCenter = True
 
+def hideAvg():
+    global showCenter
+    showCenter = False
+    for boid in boids:
+        avgList = boid.getAvgList()
+        for avgBoid in avgList:
+            canvas.delete(avgBoid)
+        avgList.clear()
+    
 
 windButton = Button(tk, text="Blow Wind", command=genWind)
 windButton_window = canvas.create_window(10, 10, anchor=NW, window=windButton)
@@ -261,6 +282,14 @@ activatePredButton = Button(tk, text="Create Predator", command=activatePred)
 activatePredButton_window = canvas.create_window(10, 170, anchor=NW, window=activatePredButton)
 deactivatePredButton = Button(tk, text="Remove Predator", command=deactivatePred)
 deactivatePredButton_window = canvas.create_window(10, 210, anchor=NW, window=deactivatePredButton)
+
+showAvgButton = Button(tk, text="Show Center of Mass", command=showAvg)
+showAvgButton_window = canvas.create_window(10, 250, anchor=NW, window=showAvgButton)
+
+hideAvgButton = Button(tk, text="Hide Center of Mass", command=hideAvg)
+hideAvgButton_window = canvas.create_window(10, 290, anchor=NW, window=hideAvgButton)
+
+
 '''
 spinbox = Spinbox(tk, from_=1, to=30)
 spinbox_window = canvas.create_window(10, 250, anchor=NW, window=spinbox)
